@@ -16,7 +16,6 @@ Resources:
     https://stackoverflow.com/questions/33566843/how-to-extract-text-from-html-page
     https://stackoverflow.com/questions/69141055/python-requests-does-not-get-website-that-opens-on-browser
 """
-import os
 
 import requests
 from bs4 import BeautifulSoup
@@ -28,14 +27,10 @@ from datetime import timedelta
 NUM_OF_CHAPTERS = 266
 
 
-def delete_lines(file, lines_to_delete=[]):
-    with open(file, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+def delete_lines(lines, lines_to_delete=[]):
     for line in lines_to_delete:
         if line < len(lines):
             lines[line] = ""
-    with open(file, "w", encoding="utf-8") as f:
-        f.writelines(lines)
 
 
 def main():
@@ -56,12 +51,7 @@ def main():
             subtitle = "[SUBTITLE]" + subtitle.select(".novel_subtitle")[0].getText()
             story = soup.find(id='novel_honbun').getText()
 
-            with open('temp.txt', 'w', encoding="utf-8") as temp:
-                temp.write(story)
-
-            with open('temp.txt', 'r', encoding="utf-8") as temp:
-                lines = temp.readlines()
-
+            lines = story.splitlines(True)
             last_deleted = False
             lines_to_delete = []
             for num, line in enumerate(lines):
@@ -77,17 +67,11 @@ def main():
             # once reached end of file, delete lines from list in REVERSE order
             lines_to_delete.reverse()
 
-            with open('temp.txt', 'a', encoding="utf-8") as temp:
-                print(f"Deleting {len(lines_to_delete)} empty lines...")
-                delete_lines('temp.txt', lines_to_delete)
-
-            with open('temp.txt', 'r', encoding="utf-8") as temp:
-                clean_story = temp.read()
-
-            os.remove('temp.txt')
+            delete_lines(lines, lines_to_delete)
+            print(f"Deleting {len(lines_to_delete)} empty lines...")
 
             f.write("\n" + subtitle + "\n\n")
-            f.write(clean_story)
+            f.write("".join(lines))
 
             print(f"Chapter {chapter} parsing complete.")
 
