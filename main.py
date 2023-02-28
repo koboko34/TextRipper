@@ -27,7 +27,23 @@ from datetime import timedelta
 NUM_OF_CHAPTERS = 266
 
 
-def delete_lines(lines, lines_to_delete=[]):
+def clean_input(lines):
+    last_deleted = False
+    lines_to_delete = []
+    for num, line in enumerate(lines):
+        # if not last_deleted and is \n, add line number to list
+        if line == "\n":
+            if last_deleted:
+                continue
+            lines_to_delete.append(num)
+            last_deleted = True
+            continue
+        if last_deleted:
+            last_deleted = False
+    # once reached end of file, delete lines from list in REVERSE order
+    lines_to_delete.reverse()
+
+    print(f"Deleting {len(lines_to_delete)} empty lines...")
     for line in lines_to_delete:
         if line < len(lines):
             lines[line] = ""
@@ -52,23 +68,7 @@ def main():
             story = soup.find(id='novel_honbun').getText()
 
             lines = story.splitlines(True)
-            last_deleted = False
-            lines_to_delete = []
-            for num, line in enumerate(lines):
-                # if not last_deleted and is \n, add line number to list
-                if line == "\n":
-                    if last_deleted:
-                        continue
-                    lines_to_delete.append(num)
-                    last_deleted = True
-                    continue
-                if last_deleted:
-                    last_deleted = False
-            # once reached end of file, delete lines from list in REVERSE order
-            lines_to_delete.reverse()
-
-            delete_lines(lines, lines_to_delete)
-            print(f"Deleting {len(lines_to_delete)} empty lines...")
+            clean_input(lines)
 
             f.write("\n" + subtitle + "\n\n")
             f.write("".join(lines))
